@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Last30Days Research Dashboard</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121a;
+    --bg3: #1a1a28;
+    --border: #2a2a3a;
+    --text: #e0e0f0;
+    --text2: #8888aa;
+    --accent: #6c5ce7;
+    --accent2: #a29bfe;
+    --green: #00b894;
+    --orange: #fdcb6e;
+    --red: #ff6b6b;
+    --blue: #74b9ff;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 24px 16px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .sidebar .logo {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .sidebar .subtitle { font-size: 12px; color: var(--text2); margin-bottom: 32px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; cursor: pointer;
+    color: var(--text2); font-size: 14px; transition: all 0.2s;
+    margin-bottom: 2px;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active { background: var(--accent); color: #fff; }
+  .nav-item .badge {
+    margin-left: auto; background: var(--accent);
+    color: #fff; font-size: 11px; padding: 1px 6px;
+    border-radius: 10px; min-width: 20px; text-align: center;
+  }
+  .nav-item.active .badge { background: rgba(255,255,255,0.3); }
+  .main { flex: 1; overflow-y: auto; padding: 32px; }
+  .main-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .main-header h1 { font-size: 24px; font-weight: 600; }
+
+  /* Cards */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h3 { font-size: 16px; margin-bottom: 12px; }
+
+  /* Preset Grid */
+  .preset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+  .preset-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .preset-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--blue));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .preset-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108,92,231,0.15);
+  }
+  .preset-card:hover::before { opacity: 1; }
+  .preset-card .icon { font-size: 28px; margin-bottom: 10px; }
+  .preset-card .name { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .preset-card .desc { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .preset-card .template {
+    margin-top: 10px; font-size: 12px; color: var(--accent2);
+    font-family: monospace; background: var(--bg3);
+    padding: 4px 8px; border-radius: 6px; display: inline-block;
+  }
+
+  /* Research Form */
+  .research-form {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .form-row { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.grow { flex: 1; min-width: 200px; }
+  .form-group label { font-size: 12px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+  input, select, textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; font-family: inherit; }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 20px; border-radius: 8px; border: none;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #5a4bd1);
+    color: #fff;
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,92,231,0.4); }
+  .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--accent); }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-danger { background: var(--red); color: #fff; }
+
+  /* Source toggles */
+  .source-toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .source-toggle {
+    padding: 6px 14px; border-radius: 20px; font-size: 12px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--text2); cursor: pointer; transition: all 0.2s;
+    user-select: none;
+  }
+  .source-toggle.active {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .source-toggle:hover { border-color: var(--accent2); }
+
+  /* Jobs list */
+  .job-item {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 16px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .job-item:hover { border-color: var(--accent); }
+  .job-status {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+  .job-status.queued, .job-status.running { background: var(--orange); animation: pulse 1.5s infinite; }
+  .job-status.done { background: var(--green); }
+  .job-status.error, .job-status.timeout { background: var(--red); }
+  .job-status.cancelled { background: var(--text2); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .job-topic { font-weight: 500; flex: 1; }
+  .job-meta { font-size: 12px; color: var(--text2); }
+
+  /* Results panel */
+  .results-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .result-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .result-item:last-child { border-bottom: none; }
+  .result-source {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    margin-right: 8px;
+  }
+  .result-source.reddit { background: #ff4500; color: #fff; }
+  .result-source.x, .result-source.twitter { background: #1da1f2; color: #fff; }
+  .result-source.youtube { background: #ff0000; color: #fff; }
+  .result-source.hackernews, .result-source.hn { background: #ff6600; color: #fff; }
+  .result-source.polymarket { background: #6c5ce7; color: #fff; }
+  .result-source.tiktok { background: #010101; color: #fff; }
+  .result-source.instagram { background: #e1306c; color: #fff; }
+  .result-source.bluesky { background: #0085ff; color: #fff; }
+  .result-source.web, .result-source.websearch { background: #00b894; color: #fff; }
+  .result-title { font-weight: 500; margin: 6px 0; }
+  .result-title a { color: var(--blue); text-decoration: none; }
+  .result-title a:hover { text-decoration: underline; }
+  .result-snippet { font-size: 13px; color: var(--text2); line-height: 1.5; }
+  .result-engagement {
+    display: flex; gap: 16px; margin-top: 6px; font-size: 12px; color: var(--text2);
+  }
+  .result-score {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 11px; background: var(--bg3); color: var(--accent2);
+    margin-left: 8px;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex; gap: 24px; margin-bottom: 24px; flex-wrap: wrap;
+  }
+  .stat-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 24px;
+    min-width: 140px;
+  }
+  .stat-value { font-size: 28px; font-weight: 700; }
+  .stat-value.green { color: var(--green); }
+  .stat-value.blue { color: var(--blue); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+
+  /* Diagnose output */
+  .diagnose-output {
+    font-family: 'SF Mono', Monaco, monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    background: var(--bg3);
+    padding: 16px;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    line-height: 1.6;
+  }
+
+  /* History table */
+  .history-table { width: 100%; border-collapse: collapse; }
+  .history-table th {
+    text-align: left; padding: 10px 12px; font-size: 12px;
+    color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .history-table td {
+    padding: 10px 12px; font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* Empty states */
+  .empty-state {
+    text-align: center; padding: 60px 20px; color: var(--text2);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state p { font-size: 14px; max-width: 400px; margin: 0 auto; }
+
+  /* Tab bar */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
+  .tab {
+    padding: 8px 16px; border-radius: 8px; font-size: 13px;
+    cursor: pointer; color: var(--text2); transition: all 0.2s;
+  }
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  .tab.active { background: var(--accent); color: #fff; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Modal overlay for results */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7); z-index: 100;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-overlay.visible { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); width: 90%; max-width: 900px;
+    max-height: 85vh; overflow-y: auto; padding: 24px;
+  }
+  .modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px; position: sticky; top: 0;
+    background: var(--bg2); padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .modal-close {
+    background: none; border: none; color: var(--text2);
+    font-size: 24px; cursor: pointer; padding: 4px 8px;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .preset-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="logo">Last30Days</div>
+    <div class="subtitle">Research Dashboard</div>
+
+    <div class="nav-item active" data-page="presets" onclick="showPage('presets')">
+      <span>&#x2728;</span> Use Cases
+    </div>
+    <div class="nav-item" data-page="research" onclick="showPage('research')">
+      <span>&#x1F50D;</span> New Research
+    </div>
+    <div class="nav-item" data-page="jobs" onclick="showPage('jobs')">
+      <span>&#x26A1;</span> Active Jobs
+      <span class="badge" id="jobs-badge" style="display:none">0</span>
+    </div>
+    <div class="nav-item" data-page="history" onclick="showPage('history')">
+      <span>&#x1F4CA;</span> History
+    </div>
+    <div class="nav-item" data-page="sources" onclick="showPage('sources')">
+      <span>&#x2699;</span> Source Status
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- PAGE: Presets (Use Cases) -->
+    <div class="page" id="page-presets">
+      <div class="main-header">
+        <h1>10 Mind-Blowing Use Cases</h1>
+      </div>
+      <div class="preset-grid" id="preset-grid"></div>
+    </div>
+
+    <!-- PAGE: New Research -->
+    <div class="page" id="page-research" style="display:none">
+      <div class="main-header">
+        <h1>New Research</h1>
+      </div>
+
+      <div class="research-form" id="research-form">
+        <div class="form-row">
+          <div class="form-group grow">
+            <label>Research Topic</label>
+            <input type="text" id="topic-input" placeholder='e.g. "AI agents 2026" or "Notion vs Obsidian"' />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Depth</label>
+            <select id="depth-select">
+              <option value="quick">Quick (90s)</option>
+              <option value="default" selected>Default (180s)</option>
+              <option value="deep">Deep (300s)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Lookback Days</label>
+            <select id="days-select">
+              <option value="1">Last 24 hours</option>
+              <option value="3">Last 3 days</option>
+              <option value="7">Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30" selected>Last 30 days</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>X Handle (optional)</label>
+            <input type="text" id="xhandle-input" placeholder="@username" style="width:150px"/>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group grow">
+            <label>Sources</label>
+            <div class="source-toggles" id="source-toggles">
+              <span class="source-toggle active" data-source="reddit">Reddit</span>
+              <span class="source-toggle active" data-source="x">X / Twitter</span>
+              <span class="source-toggle active" data-source="youtube">YouTube</span>
+              <span class="source-toggle active" data-source="hn">Hacker News</span>
+              <span class="source-toggle" data-source="polymarket">Polymarket</span>
+              <span class="source-toggle" data-source="tiktok">TikTok</span>
+              <span class="source-toggle" data-source="instagram">Instagram</span>
+              <span class="source-toggle" data-source="bluesky">Bluesky</span>
+              <span class="source-toggle" data-source="web">Web</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row" style="margin-top:8px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--text2)">
+            <input type="checkbox" id="store-check" /> Save to SQLite database
+          </label>
+        </div>
+
+        <div class="form-row" style="margin-top:12px">
+          <button class="btn btn-primary" onclick="submitResearch()">
+            Run Research
+          </button>
+          <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+        </div>
+      </div>
+
+      <div id="active-preset-info" style="display:none" class="card">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span id="preset-icon" style="font-size:24px"></span>
+          <div>
+            <strong id="preset-name"></strong>
+            <div style="font-size:13px;color:var(--text2)" id="preset-desc"></div>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="clearPreset()" style="margin-left:auto">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: Active Jobs -->
+    <div class="page" id="page-jobs" style="display:none">
+      <div class="main-header">
+        <h1>Active Jobs</h1>
+        <button class="btn btn-sm btn-secondary" onclick="refreshJobs()">Refresh</button>
+      </div>
+
+      <div class="stats-bar" id="job-stats"></div>
+      <div id="jobs-list"></div>
+    </div>
+
+    <!-- PAGE: History -->
+    <div class="page" id="page-history" style="display:none">
+      <div class="main-header">
+        <h1>Research History</h1>
+      </div>
+      <div id="history-content"></div>
+    </div>
+
+    <!-- PAGE: Source Status -->
+    <div class="page" id="page-sources" style="display:none">
+      <div class="main-header">
+        <h1>Source Status</h1>
+        <button class="btn btn-sm btn-primary" onclick="runDiagnose()">Run Diagnostics</button>
+      </div>
+      <div class="card">
+        <div class="diagnose-output" id="diagnose-output">
+          Click "Run Diagnostics" to check which sources are available...
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal-overlay" id="result-modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h2 id="modal-title">Results</h2>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+// --- State ---
+let currentPage = 'presets';
+let presets = [];
+let jobs = {};
+let pollTimer = null;
+
+// --- Navigation ---
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelector(`[data-page="${page}"]`).classList.add('active');
+  currentPage = page;
+
+  if (page === 'jobs') refreshJobs();
+  if (page === 'history') loadHistory();
+}
+
+// --- Presets ---
+async function loadPresets() {
+  try {
+    const res = await fetch('/api/presets');
+    presets = await res.json();
+  } catch {
+    presets = [];
+  }
+  renderPresets();
+}
+
+function renderPresets() {
+  const grid = document.getElementById('preset-grid');
+  grid.innerHTML = presets.map(p => `
+    <div class="preset-card" onclick="usePreset('${p.id}')">
+      <div class="icon">${p.icon}</div>
+      <div class="name">${p.name}</div>
+      <div class="desc">${p.description}</div>
+      <div class="template">${p.template}</div>
+    </div>
+  `).join('');
+}
+
+function usePreset(id) {
+  const p = presets.find(x => x.id === id);
+  if (!p) return;
+
+  showPage('research');
+
+  // Fill form
+  document.getElementById('topic-input').value = '';
+  document.getElementById('topic-input').placeholder = p.template;
+  document.getElementById('depth-select').value = p.opts.depth || 'default';
+  document.getElementById('days-select').value = String(p.opts.days || 30);
+  document.getElementById('store-check').checked = !!p.opts.store;
+
+  // Toggle sources
+  const activeSources = (p.opts.sources || '').split(',');
+  document.querySelectorAll('.source-toggle').forEach(el => {
+    el.classList.toggle('active', activeSources.includes(el.dataset.source));
+  });
+
+  // Show preset info
+  document.getElementById('active-preset-info').style.display = 'block';
+  document.getElementById('preset-icon').textContent = p.icon;
+  document.getElementById('preset-name').textContent = p.name;
+  document.getElementById('preset-desc').textContent = p.description;
+
+  document.getElementById('topic-input').focus();
+}
+
+function clearPreset() {
+  document.getElementById('active-preset-info').style.display = 'none';
+  resetForm();
+}
+
+// --- Source toggles ---
+document.getElementById('source-toggles').addEventListener('click', e => {
+  if (e.target.classList.contains('source-toggle')) {
+    e.target.classList.toggle('active');
+  }
+});
+
+// --- Form ---
+function getFormData() {
+  const topic = document.getElementById('topic-input').value.trim();
+  const depth = document.getElementById('depth-select').value;
+  const days = document.getElementById('days-select').value;
+  const xHandle = document.getElementById('xhandle-input').value.trim();
+  const store = document.getElementById('store-check').checked;
+  const sources = Array.from(document.querySelectorAll('.source-toggle.active'))
+    .map(el => el.dataset.source).join(',');
+
+  return {
+    topic,
+    opts: {
+      depth,
+      days: parseInt(days),
+      sources: sources || undefined,
+      x_handle: xHandle || undefined,
+      store: store || undefined,
+    }
+  };
+}
+
+function resetForm() {
+  document.getElementById('topic-input').value = '';
+  document.getElementById('topic-input').placeholder = 'e.g. "AI agents 2026" or "Notion vs Obsidian"';
+  document.getElementById('depth-select').value = 'default';
+  document.getElementById('days-select').value = '30';
+  document.getElementById('xhandle-input').value = '';
+  document.getElementById('store-check').checked = false;
+  document.querySelectorAll('.source-toggle').forEach(el => {
+    el.classList.toggle('active', ['reddit','x','youtube','hn'].includes(el.dataset.source));
+  });
+  document.getElementById('active-preset-info').style.display = 'none';
+}
+
+async function submitResearch() {
+  const data = getFormData();
+  if (!data.topic) {
+    document.getElementById('topic-input').style.borderColor = 'var(--red)';
+    document.getElementById('topic-input').focus();
+    setTimeout(() => document.getElementById('topic-input').style.borderColor = '', 2000);
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/research', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    const result = await res.json();
+    if (result.job_id) {
+      showPage('jobs');
+      startPolling();
+    }
+  } catch (err) {
+    alert('Error: ' + err.message);
+  }
+}
+
+// --- Jobs ---
+async function refreshJobs() {
+  try {
+    const res = await fetch('/api/jobs');
+    const jobList = await res.json();
+    jobs = {};
+    jobList.forEach(j => jobs[j.id] = j);
+    renderJobs();
+  } catch {}
+}
+
+function renderJobs() {
+  const list = Object.values(jobs).sort((a, b) => (b.started_at || 0) - (a.started_at || 0));
+
+  // Stats
+  const running = list.filter(j => ['queued','running'].includes(j.status)).length;
+  const done = list.filter(j => j.status === 'done').length;
+  const errors = list.filter(j => ['error','timeout'].includes(j.status)).length;
+
+  document.getElementById('job-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-value orange">${running}</div><div class="stat-label">Running</div></div>
+    <div class="stat-card"><div class="stat-value green">${done}</div><div class="stat-label">Completed</div></div>
+    <div class="stat-card"><div class="stat-value" style="color:var(--red)">${errors}</div><div class="stat-label">Errors</div></div>
+    <div class="stat-card"><div class="stat-value blue">${list.length}</div><div class="stat-label">Total</div></div>
+  `;
+
+  // Badge
+  const badge = document.getElementById('jobs-badge');
+  if (running > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = running;
+  } else {
+    badge.style.display = 'none';
+  }
+
+  if (list.length === 0) {
+    document.getElementById('jobs-list').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#x26A1;</div>
+        <p>No active jobs. Start a research from the Use Cases or New Research page.</p>
+      </div>
+    `;
+    return;
+  }
+
+  document.getElementById('jobs-list').innerHTML = list.map(j => `
+    <div class="job-item" onclick="viewJob('${j.id}')">
+      <div class="job-status ${j.status}"></div>
+      <div class="job-topic">${escHtml(j.topic)}</div>
+      <div class="job-meta">${j.status} &middot; ${timeAgo(j.started_at)}</div>
+    </div>
+  `).join('');
+
+  // Auto-poll if there are running jobs
+  if (running > 0) startPolling();
+  else stopPolling();
+}
+
+function startPolling() {
+  if (pollTimer) return;
+  pollTimer = setInterval(refreshJobs, 3000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+async function viewJob(id) {
+  try {
+    const res = await fetch(`/api/jobs/${id}`);
+    const job = await res.json();
+    showJobModal(job);
+  } catch {}
+}
+
+function showJobModal(job) {
+  document.getElementById('modal-title').textContent = job.topic || 'Results';
+  const body = document.getElementById('modal-body');
+
+  if (job.status === 'running' || job.status === 'queued') {
+    body.innerHTML = `
+      <div class="empty-state">
+        <div class="icon" style="animation:pulse 1.5s infinite">&#x23F3;</div>
+        <p>Research is ${job.status}... Results will appear when complete.</p>
+        ${job.cmd ? `<div style="margin-top:12px;font-size:12px;color:var(--text2);font-family:monospace">${escHtml(job.cmd)}</div>` : ''}
+      </div>
+    `;
+  } else if (job.status === 'done' && job.result) {
+    body.innerHTML = renderResults(job.result);
+  } else if (job.status === 'done' && job.raw_output) {
+    body.innerHTML = `<div class="diagnose-output">${escHtml(job.raw_output)}</div>`;
+  } else if (job.status === 'error') {
+    body.innerHTML = `<div style="color:var(--red)">${escHtml(job.error || 'Unknown error')}</div>`;
+  } else if (job.status === 'timeout') {
+    body.innerHTML = `<div style="color:var(--orange)">Research timed out. Try a "quick" depth or narrower topic.</div>`;
+  } else {
+    body.innerHTML = `<div class="diagnose-output">${escHtml(job.raw_output || JSON.stringify(job, null, 2))}</div>`;
+  }
+
+  document.getElementById('result-modal').classList.add('visible');
+}
+
+function renderResults(data) {
+  const items = data.items || data.results || [];
+  if (items.length === 0 && data.raw_output) {
+    return `<div class="diagnose-output">${escHtml(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</div>`;
+  }
+
+  // Group by source
+  const bySource = {};
+  items.forEach(item => {
+    const src = (item.source || item.type || 'unknown').toLowerCase();
+    if (!bySource[src]) bySource[src] = [];
+    bySource[src].push(item);
+  });
+
+  let html = `<div style="margin-bottom:16px;font-size:13px;color:var(--text2)">${items.length} results across ${Object.keys(bySource).length} sources</div>`;
+
+  // Source filter tabs
+  html += `<div class="tabs" id="result-tabs">
+    <span class="tab active" onclick="filterResults('all', this)">All (${items.length})</span>
+    ${Object.entries(bySource).map(([src, items]) =>
+      `<span class="tab" onclick="filterResults('${src}', this)">${src} (${items.length})</span>`
+    ).join('')}
+  </div>`;
+
+  html += '<div id="result-items">';
+  items.forEach(item => {
+    const src = (item.source || item.type || 'unknown').toLowerCase();
+    const score = item.score != null ? item.score.toFixed(2) : '';
+    const url = item.url || item.link || '';
+    const title = item.title || item.text || item.content || '';
+    const snippet = item.body || item.snippet || item.description || item.selftext || '';
+
+    html += `<div class="result-item" data-source="${src}">
+      <div>
+        <span class="result-source ${src}">${src}</span>
+        ${score ? `<span class="result-score">${score}</span>` : ''}
+        ${item.date ? `<span style="font-size:11px;color:var(--text2)">${item.date}</span>` : ''}
+      </div>
+      <div class="result-title">
+        ${url ? `<a href="${escHtml(url)}" target="_blank">${escHtml(truncate(title, 120))}</a>` : escHtml(truncate(title, 120))}
+      </div>
+      ${snippet ? `<div class="result-snippet">${escHtml(truncate(snippet, 250))}</div>` : ''}
+      <div class="result-engagement">
+        ${item.score_raw != null ? `<span>Score: ${item.score_raw}</span>` : ''}
+        ${item.comments != null ? `<span>Comments: ${item.comments}</span>` : ''}
+        ${item.likes != null ? `<span>Likes: ${item.likes}</span>` : ''}
+        ${item.views != null ? `<span>Views: ${item.views}</span>` : ''}
+        ${item.reposts != null ? `<span>Reposts: ${item.reposts}</span>` : ''}
+        ${item.subreddit ? `<span>r/${item.subreddit}</span>` : ''}
+        ${item.author ? `<span>@${item.author}</span>` : ''}
+      </div>
+    </div>`;
+  });
+  html += '</div>';
+
+  return html;
+}
+
+window.filterResults = function(source, tabEl) {
+  document.querySelectorAll('#result-tabs .tab').forEach(t => t.classList.remove('active'));
+  tabEl.classList.add('active');
+  document.querySelectorAll('#result-items .result-item').forEach(el => {
+    el.style.display = (source === 'all' || el.dataset.source === source) ? '' : 'none';
+  });
+};
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('result-modal')) return;
+  document.getElementById('result-modal').classList.remove('visible');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// --- History ---
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    const history = await res.json();
+    renderHistory(history);
+  } catch { renderHistory([]); }
+}
+
+function renderHistory(history) {
+  const el = document.getElementById('history-content');
+  if (history.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="icon">&#x1F4CA;</div><p>No research history yet.</p></div>`;
+    return;
+  }
+
+  const rows = history.slice().reverse().map(h => `
+    <tr>
+      <td>${escHtml(h.topic)}</td>
+      <td>${h.opts?.depth || 'default'}</td>
+      <td>${h.opts?.days || 30}d</td>
+      <td>${h.item_count || 0}</td>
+      <td>${h.returncode === 0 ? '<span style="color:var(--green)">OK</span>' : '<span style="color:var(--red)">Err</span>'}</td>
+      <td>${new Date(h.started_at * 1000).toLocaleString()}</td>
+    </tr>
+  `).join('');
+
+  el.innerHTML = `
+    <div class="card">
+      <table class="history-table">
+        <thead><tr>
+          <th>Topic</th><th>Depth</th><th>Range</th><th>Results</th><th>Status</th><th>Date</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// --- Diagnostics ---
+async function runDiagnose() {
+  const out = document.getElementById('diagnose-output');
+  out.textContent = 'Running diagnostics...';
+  try {
+    const res = await fetch('/api/diagnose');
+    const data = await res.json();
+    out.textContent = data.output || data.stderr || 'No output';
+  } catch (err) {
+    out.textContent = 'Error: ' + err.message;
+  }
+}
+
+// --- Helpers ---
+function escHtml(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function truncate(s, n) {
+  if (!s) return '';
+  return s.length > n ? s.slice(0, n) + '...' : s;
+}
+function timeAgo(ts) {
+  if (!ts) return '';
+  const secs = Math.floor(Date.now()/1000 - ts);
+  if (secs < 60) return secs + 's ago';
+  if (secs < 3600) return Math.floor(secs/60) + 'm ago';
+  if (secs < 86400) return Math.floor(secs/3600) + 'h ago';
+  return Math.floor(secs/86400) + 'd ago';
+}
+
+// --- Init ---
+loadPresets();
+</script>
+</body>
+</html>
