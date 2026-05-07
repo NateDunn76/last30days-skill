@@ -34,7 +34,8 @@ CSS = """
   --accent-soft: #c4b5fd;
   --border: #27272a;
   --code-bg: #1a1a1d;
-  --max-w: 720px;
+  --max-w: 920px;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
 }
 
 @media (prefers-color-scheme: light) {
@@ -48,6 +49,7 @@ CSS = """
     --accent-soft: #6d28d9;
     --border: #e4e4e7;
     --code-bg: #f4f4f5;
+    --shadow: 0 18px 50px rgba(24, 24, 27, 0.10);
   }
 }
 
@@ -94,6 +96,203 @@ body {
   font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
   font-size: 13px;
   letter-spacing: 0.01em;
+}
+
+
+.report-hero {
+  position: relative;
+  margin: 0 0 2rem;
+  padding: 2rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(168, 85, 247, 0.30), transparent 34rem),
+    linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(24, 24, 27, 0.72));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.report-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -20% -45% 35%;
+  height: 14rem;
+  background: radial-gradient(circle, rgba(196, 181, 253, 0.20), transparent 68%);
+  pointer-events: none;
+}
+
+.eyebrow {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1rem;
+  color: var(--accent-soft);
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.report-hero h1 {
+  position: relative;
+  z-index: 1;
+  max-width: 14ch;
+  margin-bottom: 1rem;
+  font-size: clamp(36px, 8vw, 70px);
+  letter-spacing: -0.055em;
+}
+
+.hero-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 54rem;
+  margin-bottom: 0;
+  color: var(--fg-muted);
+  font-size: 18px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin: 2rem 0;
+}
+
+.stat-card {
+  padding: 1rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.stat-value {
+  display: block;
+  color: var(--fg);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.stat-label {
+  display: block;
+  margin-top: 0.35rem;
+  color: var(--fg-subtle);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.source-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0 0 2.25rem;
+}
+
+.source-chip,
+.cluster-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.section-kicker {
+  margin: 2.75rem 0 1rem;
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.cluster-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.cluster-card {
+  padding: 1.35rem;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+}
+
+.cluster-card h2 {
+  margin: 0 0 0.9rem;
+  font-size: 20px;
+}
+
+.cluster-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.score-pill {
+  display: inline-flex;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(168, 85, 247, 0.16);
+  color: var(--accent-soft);
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.evidence-list {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1rem;
+}
+
+.evidence-item {
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.evidence-title {
+  margin: 0 0 0.3rem;
+  color: var(--fg);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.evidence-title a { color: inherit; }
+
+.evidence-snippet {
+  margin: 0 0 0.55rem;
+  color: var(--fg-muted);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.evidence-meta {
+  color: var(--fg-subtle);
+  font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.empty-state {
+  padding: 1.35rem;
+  background: var(--bg-elev);
+  border: 1px dashed var(--border);
+  border-radius: 20px;
+  color: var(--fg-muted);
 }
 
 h1 {
@@ -307,7 +506,7 @@ td:first-child { color: var(--fg); font-weight: 500; }
     color: var(--fg-subtle);
   }
 
-  .engine-footer { page-break-inside: avoid; }
+  .report-hero, .stat-card, .cluster-card, .engine-footer { page-break-inside: avoid; }
 }
 
 @media (max-width: 600px) {
@@ -319,6 +518,8 @@ td:first-child { color: var(--fg); font-weight: 500; }
   h1 { font-size: 25px; }
   .badge { font-size: 12px; }
   th, td { padding: 0.65rem 0.5rem; }
+  .report-hero { padding: 1.4rem; border-radius: 18px; }
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 """.strip()
 
@@ -357,6 +558,8 @@ def render_html(
     md = _strip_canonical_boundary(md)
     md = _promote_prose_labels(md)
     body = _markdown_to_html(md)
+    if synthesis_md is None:
+        body = _inject_report_dashboard(body, report)
     body = _wrap_engine_footer(body)
     body = _promote_meta_marker(body)
     colophon = _build_colophon(report)
@@ -384,6 +587,142 @@ def render_html_comparison(
     topic = " vs ".join(label for label, _ in entity_reports)
     colophon = _build_colophon(entity_reports[0][1], topic=topic)
     return _wrap_in_template(body, colophon, topic)
+
+
+
+def _inject_report_dashboard(body: str, report: schema.Report) -> str:
+    dashboard = _render_report_dashboard(report)
+    if not dashboard:
+        return body
+    footer_match = re.search(r"__LAST30DAYS_ENGINE_FOOTER_\d+__", body)
+    if footer_match:
+        token = footer_match.group(0)
+        return body.replace(token, f"{dashboard}\n{token}", 1)
+    footer_token = '<div class="engine-footer">'
+    if footer_token in body:
+        return body.replace(footer_token, f"{dashboard}\n{footer_token}", 1)
+    return f"{body}\n{dashboard}" if body else dashboard
+
+
+def _render_report_dashboard(report: schema.Report) -> str:
+    total_items = sum(len(items) for items in report.items_by_source.values())
+    active_sources = [(source, items) for source, items in sorted(report.items_by_source.items()) if items]
+    stats = [
+        (len(active_sources), "active sources"),
+        (total_items, "items scanned"),
+        (len(report.clusters), "story clusters"),
+        (len(report.ranked_candidates), "ranked signals"),
+    ]
+    parts = [
+        '<section class="report-hero" aria-labelledby="report-title">',
+        '  <div class="eyebrow">Social search briefing</div>',
+        f'  <h1 id="report-title">{html.escape(report.topic)}</h1>',
+        f'  <p class="hero-copy">A last-30-days research dashboard built from {html.escape(_range_text(report))}, ranked by engagement, freshness, and cross-source signal.</p>',
+        '</section>',
+        '<section class="stats-grid" aria-label="Research summary">',
+    ]
+    for value, label in stats:
+        parts.extend([
+            '  <div class="stat-card">',
+            f'    <span class="stat-value">{html.escape(_compact_number(value))}</span>',
+            f'    <span class="stat-label">{html.escape(label)}</span>',
+            '  </div>',
+        ])
+    parts.append('</section>')
+    if active_sources:
+        parts.append('<section class="source-strip" aria-label="Sources searched">')
+        for source, items in active_sources:
+            parts.append(f'  <span class="source-chip">{html.escape(_source_label(source))} · {len(items)}</span>')
+        parts.append('</section>')
+    if report.clusters:
+        parts.extend([
+            '<div class="section-kicker">Top evidence clusters</div>',
+            '<section class="cluster-grid" aria-label="Top evidence clusters">',
+        ])
+        candidate_by_id = {candidate.candidate_id: candidate for candidate in report.ranked_candidates}
+        for cluster in report.clusters[:6]:
+            parts.extend(_render_cluster_card(cluster, candidate_by_id))
+        parts.append('</section>')
+    else:
+        parts.append('<div class="empty-state">No ranked clusters were produced for this run. Try a broader topic or enable more sources.</div>')
+    return "\n".join(parts)
+
+
+def _render_cluster_card(cluster: schema.Cluster, candidate_by_id: dict[str, schema.Candidate]) -> list[str]:
+    parts = [
+        '  <article class="cluster-card">',
+        f'    <h2>{html.escape(cluster.title)}</h2>',
+        '    <div class="cluster-meta">',
+        f'      <span class="score-pill">score {cluster.score:.0f}</span>',
+    ]
+    for source in cluster.sources:
+        parts.append(f'      <span class="cluster-source">{html.escape(_source_label(source))}</span>')
+    if cluster.uncertainty:
+        parts.append(f'      <span class="cluster-source">{html.escape(cluster.uncertainty)}</span>')
+    parts.extend(['    </div>', '    <div class="evidence-list">'])
+    rendered_any = False
+    for candidate_id in cluster.representative_ids[:3]:
+        candidate = candidate_by_id.get(candidate_id)
+        if not candidate:
+            continue
+        rendered_any = True
+        parts.extend(_render_evidence_item(candidate))
+    if not rendered_any:
+        parts.append('      <div class="evidence-item"><p class="evidence-snippet">No representative evidence item was available for this cluster.</p></div>')
+    parts.extend(['    </div>', '  </article>'])
+    return parts
+
+
+def _render_evidence_item(candidate: schema.Candidate) -> list[str]:
+    title = html.escape(candidate.title or "Untitled signal")
+    if candidate.url:
+        title_html = f'<a href="{html.escape(candidate.url, quote=True)}">{title}</a>'
+    else:
+        title_html = title
+    snippet = (candidate.snippet or candidate.explanation or "").strip()
+    meta_bits = [_source_label(candidate.source)]
+    if candidate.source_items:
+        item = candidate.source_items[0]
+        if item.container:
+            meta_bits.append(item.container)
+        if item.published_at:
+            meta_bits.append(item.published_at[:10])
+    if candidate.engagement not in (None, ""):
+        meta_bits.append(f"engagement {_compact_number(candidate.engagement)}")
+    meta = " · ".join(str(bit) for bit in meta_bits if bit)
+    parts = [
+        '      <div class="evidence-item">',
+        f'        <p class="evidence-title">{title_html}</p>',
+    ]
+    if snippet:
+        parts.append(f'        <p class="evidence-snippet">{html.escape(snippet)}</p>')
+    parts.extend([
+        f'        <div class="evidence-meta">{html.escape(meta)}</div>',
+        '      </div>',
+    ])
+    return parts
+
+
+def _source_label(source: str) -> str:
+    return render.SOURCE_LABELS.get(source, source.replace("_", " ").title())
+
+
+def _range_text(report: schema.Report) -> str:
+    return f"{report.range_from} to {report.range_to}"
+
+
+def _compact_number(value: int | float) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    if number >= 1_000_000:
+        return f"{number / 1_000_000:.1f}M".rstrip("0").rstrip(".")
+    if number >= 1_000:
+        return f"{number / 1_000:.1f}K".rstrip("0").rstrip(".")
+    if number.is_integer():
+        return str(int(number))
+    return f"{number:.1f}"
 
 
 def _strip_evidence_block(md: str) -> str:
