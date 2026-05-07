@@ -129,9 +129,23 @@ class HtmlRenderSnapshotTests(unittest.TestCase):
             "<title>last30days · obscure topic</title>",
             "no active sources",
             "topic: obscure topic",
+            '<section class="report-hero" aria-labelledby="report-title">',
+            "No ranked clusters were produced for this run",
         ]
         for marker in snapshot_markers:
             self.assertIn(marker, rendered)
+
+    def test_report_dashboard_renders_ranked_clusters(self):
+        rendered = html_render.render_html(
+            _report("AI agent frameworks", ["OpenClaw ships containers", "Skills marketplace grows"])
+        )
+        self.assertIn("Social search briefing", rendered)
+        self.assertIn('<span class="stat-label">story clusters</span>', rendered)
+        self.assertIn('<span class="source-chip">Web · 2</span>', rendered)
+        self.assertIn("Top evidence clusters", rendered)
+        self.assertIn("OpenClaw ships containers", rendered)
+        self.assertIn("Snippet for OpenClaw ships containers", rendered)
+        self.assertLess(rendered.index('<section class="report-hero"'), rendered.index('<div class="engine-footer">'))
 
     def test_comparison_mode_snapshot(self):
         reports = [
